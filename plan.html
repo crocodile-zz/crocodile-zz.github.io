@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plan</title>
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+        }
+
+        body {
+            background-color: rgba(160,220,230,0.5);
+        }
+
+        .w {
+            width: 900px;
+            margin: 0 auto;
+        }
+
+        .header {
+            height: 60px;
+            background-color:#ADD8E6;
+        }
+
+        .header-w {
+            position: relative;
+        }
+
+        .logo {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 200px;
+            height: 60px;
+            line-height: 60px;
+            text-align: left;
+            color: #fff;
+        }
+
+        .add {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 600px;
+            height: 60px;
+            line-height: 58px;
+            text-align: right;
+        }
+
+        .add #title {
+            width: 420px;
+            height: 30px;
+            border-radius: 10px;
+            outline: none;
+            padding-left: 10px;
+            font-size: 16px;
+        }
+
+		.add #button {
+			position: absolute;
+			top: 18px;
+			right: 6px;
+			width: 23px;
+			height: 23px;
+			border-radius: 18px;
+			cursor: pointer;
+			background: #769CE6  0 0 no-repeat;
+		}
+
+        .title {
+            height: 80px;
+            line-height: 80px;
+        }
+
+        .title h1 {
+            float: left;
+        }
+
+        .title .count {
+            float: right;
+            line-height: 80px;
+        }
+
+        .title span {
+            height: 14px;
+            background-color: #fff;
+            border-radius: 14px;
+            padding: 0 6px;
+        }
+
+        #todolist li {
+            list-style: none;
+            height: 40px;
+            line-height: 40px;
+            background-color: #fff;
+            border-radius: 5px;
+            border-left: 7px solid #388E8E;
+            margin: 10px 0;
+        }
+
+        #donelist li {
+            list-style: none;
+            height: 40px;
+            line-height: 40px;
+            background-color: #fff;
+            border-radius: 5px;
+            border-left: 7px solid #999;
+            background: rgba(255, 255, 255, .5);
+        }
+
+        #todolist input,
+        #donelist input {
+            float: left;
+            width: 25px;
+            height: 25px;
+            margin-left: 15px;
+            margin-top: 8px;
+        }
+
+        #todolist p,
+        #donelist p {
+            float: left;
+            margin-left: 15px;
+        }
+
+        #todolist a,
+        #donelist a {
+            float: right;
+            margin-right: 15px;
+            text-decoration: none;
+            color: #999;
+        }
+
+        .del {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            line-height: 20px;
+            text-align: center;
+            background: #ccc;
+            flex-grow: 0;
+            margin-top: 10px;
+        }
+
+        #back{
+            position: relative;
+            width:120px;
+            height:40px;
+            border:1px solid #6699FF;
+            margin:50px auto;
+            text-align:center;
+            cursor:pointer;    /*鼠标手势*/
+            border-radius:5px;    /*四个角的圆弧度*/
+            background:rgba(193,208,252,0.3);   /*背景色*/
+            line-height:40px    /*调整与上边框的距离*/
+        }
+        #back:hover{
+            background:rgb(193,208,252);    /*鼠标悬停后的背景色*/
+        }
+        a{
+            text-decoration:none;   /*去掉下划线*/
+            color:#6699FF;
+        }
+
+
+	/* 	提示框	*/
+		.dialog{
+			/*
+			display：none表示影藏
+			z-index：//保证该层在最上面显示
+			*/
+			width: 200px;
+			border: 10px #fff solid;
+			position: absolute;
+			display: none;
+			z-index: 101;
+		}
+
+		.dialog .title{
+			background:#fbaf15;
+			padding: 10px;
+			color: #fff;
+			font-weight: bold;
+
+		}
+
+		.dialog .content{
+			background: #fff;
+			padding: 25px;
+			height: 40px;
+		}
+
+		.dialog .bottom{
+			text-align: right;
+			padding: 10 10 10 0;
+			background: #eee;
+		}
+
+		.dialog .content #time{
+			background: #fff;
+			width: 50px;
+			height: 28px;
+			text-align: center;
+		}
+		.dialog .content .timebtn{
+			width: 30px;
+			height: 30px;
+			cursor: pointer;
+		}
+		.mask{
+			/*
+			里面有个display：no；
+			开始的时候看不到这个div的效果它主要作用是封闭整个页面
+			*/
+			width: 100%;
+			height: 100%;
+			background: #000;
+			position: absolute;
+			top: 0px;
+			left: 0px;
+			display: none;
+			z-index: 100;
+		}
+
+		.btn{
+			border: #666 1px solid;
+			width: 87px;
+			cursor: pointer;
+		}
+    </style>
+    <script src="http://libs.baidu.com/jquery/2.1.4/jquery.min.js"></script>
+    <script>
+        $(function() {
+            load();
+            // 1. 按下回车 把完整数据 存储到本地存储里面
+            // 存储的数据格式 var todolist = [{title: "xxx", done: false}]
+            $("#title").on("keydown", function(event) {
+                if (event.keyCode === 13) {
+                    if ($(this).val() === "") {
+                        alert("请输入内容！")
+                    } else {
+                        // 先读取本地数据存储的原来的数据
+                        var local = getData();
+                        // console.log(local);
+                        // 把local数组进行更新数据 把最新的数据追加给local数组
+                        local.push({
+                            title: $(this).val(),
+                            done: false
+                        });
+                        // 把这个数组local存储到本地存储
+                        saveData(local);
+
+
+                        // 2. 把本地存储的数据渲染出来
+                        load();
+                        $(this).val("");
+                    }
+                }
+            });
+
+            // 3. 绑定todo按钮的触发事件
+			$(document).ready(function(){
+				//按下按钮触发操作
+				$("#button").click(function(){
+				//设置遮罩层元素不透明
+				$(".mask").css("opacity","0.3").show();
+				//制作提示框
+				showDialog();
+				//展现css的特效
+				$(".dialog").show();
+				});
+
+				//当页面窗口大小改变时触发的事件
+				$(window).resize(function(){
+					if(!$(".dialog").is(":visible")){
+						return;
+					}
+					showDialog();
+				});
+
+				//取消按钮事件
+				$("#noOk").click(function(){
+					$(".dialog").hide();
+					$(".mask").hide();
+				});
+
+				//确定按钮事件
+				$("#ok").click(function(){
+					$(".dialog").hide();
+					$(".mask").hide();
+						if ($("#title").val() === "") {
+						    alert("请输入内容！")
+						} else {
+						    var local = getData();
+						    local.push({
+						        title: $("#title").val(),
+								time: $("#time").val(),
+						        done: false
+						    });
+						    saveData(local);
+						    load();
+						    $("#time").val("");
+						}
+
+				});
+			});
+		/* 根据当前页面于滚动条的位置，设置提示对话框的TOP和left */
+			function showDialog(){
+				var objw=$(window);//获取当前窗口
+				var objc=$(".dialog");//获取当前对话框
+				var brsw=objw.width(); //获取页面宽度
+				var brsh=objw.height(); //获取页面高度
+				var sclL=objw.scrollLeft(); //获取页面左滑动条信息
+				var sclT=objw.scrollTop();
+				var curw=objc.width(); //获取对话框宽度
+				var curh=objc.height(); //获取对话框高度
+				var left=sclL+(brsw -curw)/2; //计算对话框居中时的左边距
+				var top=sclT+(brsh-curh)/2; //计算对话框居中时的上边距
+				objc.css({"left":left,"top":top}); //设置对话框居中
+			}
+
+			// 按下+-调整时间
+			  $(function(){
+                 var price=0;
+                 $("#cut").click(function(){
+                       price=$("#time").val();
+                 if($("#time").val()==0){
+                  return
+                }
+                 else{
+                 price=Number(price)-Number(5);
+                 }
+                   $("#time").val(price);
+                 })
+                 $("#add").click(function(){
+               price=$("#time").val();
+               if ($("#time").val()==60) {
+                return
+               }
+               else{
+                price=Number(price)+Number(5);
+               }
+                   $("#time").val(price);
+                 })
+              })
+
+
+            // 4. todolist 删除操作
+            $("ol, ul").on("click", "a", function() {
+                    // alert(11);
+                    var data = getData();
+                    var index = $(this).attr("id");
+                    //删除所选数据
+                    data.splice(index, 1);
+                    saveData(data);
+                    load();
+                })
+
+
+                // 5. todolist 正在进行和已完成的操作
+            $("ol, ul").on("click", "input", function() {
+                    // 先获取本地存储的数据
+                    var data = getData();
+                    // 修改数据
+                    var index = $(this).siblings("a").attr("id");
+                    data[index].done = $(this).prop("checked");
+                    // 保存到本地存储
+                    saveData(data);
+                    load();
+                })
+                // 读取本地存储的数据
+            function getData() {
+                    var data = localStorage.getItem("todolist");
+                    if (data !== null) {
+                        // 本地存储里面的数据都是字符串格式的 需要转换格式
+                        return JSON.parse(data);
+                    } else {
+                        return [];
+                    }
+                }
+            // 保存本地存储数据
+            function saveData(data) {
+                localStorage.setItem("todolist", JSON.stringify(data));
+            }
+            // 渲染加载数据
+            function load() {
+                var data = getData();
+                // 遍历之前先清空ol里面的元素内容
+                $("ol, ul").empty();
+                var todoCount = 0; //正在进行的个数
+                var doneCount = 0; // 完成的个数
+
+                // 遍历数据
+                $.each(data, function(i, n) {
+                    if (n.done) {
+                        $("ul").prepend("<li><input type='checkbox' checked='checked'><p>" + n.title + "&nbsp&nbsp" + "  计划时间：" + n.time + "分钟" + "</p><a href='#' id='" + i + "'><div class='del'>X</div></a></li>");
+                        doneCount++;
+                    } else {
+                        $("ol").prepend("<li><input type='checkbox'><p>" + n.title + "&nbsp&nbsp" + "  计划时间：" + n.time + "分钟" + "</p><a href='#' id='" + i + "'><div class='del'>X</div></a></li>");
+                        todoCount++;
+                    }
+                });
+                $("#todoCount").text(todoCount);
+                $("#doneCount").text(doneCount);
+            }
+        })
+    </script>
+</head>
+
+<body>
+    <!-- 主体标题start -->
+    <div class="header">
+        <div class="header-w w">
+            <div class="logo">
+                <h1>当日计划</h1>
+            </div>
+            <div class="add">
+                <input type="text" id="title" placeholder="输入事项后点击蓝色按钮">
+                <input type="button" id="button">
+            </div>
+        </div>
+    </div>
+    <!-- 主体标题end -->
+
+    <!-- 提示选择时间start -->
+    <div class="mask"></div> <!-- 遮罩层 -->
+    <div class="dialog"> 	<!-- 提示窗 -->
+
+	<div class="titlea">
+		<p id="todo">选择计划时间（分钟）:</p>
+	</div>
+
+	<div class="content">
+        <input class="timebtn" type="button" value="-" id="cut" style="background:rgba(193,208,252,0.3);color: red;"/>
+        <input type="text" id="time" style="background:rgba(193,208,252,0.3); width:40px; text-align:center" value="0"/>
+        <input class="timebtn" type="button" value="+" id="add" style="background:rgba(193,208,252,0.3);color: blue;"/>分钟
+	</div>
+
+	<div class="bottom">
+		<input type="button" id="ok" value="确定" class="btn">
+		<input type="button" id="noOk" value="取消" class="btn">
+	</div>
+    </div>
+    <!-- 提示选择时间end -->
+
+    <!-- 主体start -->
+    <div class="main">
+        <div class="main-w w">
+            <div class="start">
+                <div class="title">
+                    <h1>计划完成</h1>
+                    <div class="count"><span id="todoCount">0</span></div>
+                </div>
+                <ol id="todolist" class="demo-box">
+
+                </ol>
+            </div>
+            <div class="end">
+                <div class="title">
+                    <h1>已经完成</h1>
+                    <div class="count"><span id="doneCount">0</span></div>
+                </div>
+                <ul id="donelist">
+
+                </ul>
+            </div>
+        </div>
+    </div>
+    <!-- 主体end -->
+<br>
+<br>
+<br>
+
+    <!-- 回到主页面start -->
+    <div id="back">
+        <a href="/">回到主页面</a>
+    </div>
+    <!-- 回到主页面end -->
+
+</body>
+
+</html>
+
+
+
+
+
